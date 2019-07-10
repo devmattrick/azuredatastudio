@@ -665,7 +665,7 @@ export default class QueryRunner extends Disposable {
 			id: resultSetId,
 			columnInfo: undefined,
 			complete: true,
-			rowCount: undefined
+			rowCount: this.batchSets[batchId].resultSetSummaries[resultSetId].rowCount
 		};
 		this._onVisualize.fire(result);
 	}
