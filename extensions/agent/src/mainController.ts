@@ -10,7 +10,6 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import * as temp from 'tmp';
 import { AlertDialog } from './dialogs/alertDialog';
 import { JobDialog } from './dialogs/jobDialog';
 import { OperatorDialog } from './dialogs/operatorDialog';
@@ -97,7 +96,6 @@ export class MainController {
 		});
 		vscode.commands.registerCommand('agent.openNotebookEditorFromJsonString', async (filename: string, jsonNotebook: string) => {
 			const tempfilePath = path.join(os.tmpdir(), filename + '.ipynb');
-
 			fs.writeFileSync(tempfilePath, jsonNotebook);
 			let uri = vscode.Uri.file(tempfilePath);
 			await azdata.nb.showNotebookDocument(uri);

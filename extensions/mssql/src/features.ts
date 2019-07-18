@@ -503,7 +503,6 @@ export class AgentServicesFeature extends SqlOpsFeature<undefined> {
 
 		let getNotebookHistory = (ownerUri: string, jobID: string, jobName: string, targetDatabase: string): Thenable<azdata.AgentNotebookHistoryResult> => {
 			let params: contracts.AgentNotebookHistoryParams = { ownerUri: ownerUri, jobId: jobID, jobName: jobName, targetDatabase: targetDatabase };
-
 			return client.sendRequest(contracts.AgentNotebookHistoryRequest
 				.type, params).then(
 					r => r,
