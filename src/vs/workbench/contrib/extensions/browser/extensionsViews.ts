@@ -837,7 +837,7 @@ export class ExtensionsListView extends ViewletPanel {
 		this.notificationService.error(err);
 	}
 
-	private getPagedModel(arg: IPager<IExtension> | IExtension[]): IPagedModel<IExtension> {
+	protected getPagedModel(arg: IPager<IExtension> | IExtension[]): IPagedModel<IExtension> {
 		if (Array.isArray(arg)) {
 			return new PagedModel(arg);
 		}
