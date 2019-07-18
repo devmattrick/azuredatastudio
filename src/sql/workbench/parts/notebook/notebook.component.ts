@@ -26,7 +26,7 @@ import { AngularDisposable } from 'sql/base/node/lifecycle';
 import { CellTypes, CellType } from 'sql/workbench/parts/notebook/models/contracts';
 import { ICellModel, IModelFactory, INotebookModel, NotebookContentChange } from 'sql/workbench/parts/notebook/models/modelInterfaces';
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
-import { INotebookService, INotebookParams, INotebookManager, INotebookEditor, INotebookSection, DEFAULT_NOTEBOOK_PROVIDER, SQL_NOTEBOOK_PROVIDER } from 'sql/workbench/services/notebook/common/notebookService';
+import { INotebookService, INotebookParams, INotebookManager, INotebookEditor, INotebookSection, DEFAULT_NOTEBOOK_PROVIDER, SQL_NOTEBOOK_PROVIDER, INavigationProvider } from 'sql/workbench/services/notebook/common/notebookService';
 import { IBootstrapParams } from 'sql/platform/bootstrap/node/bootstrapService';
 import { NotebookModel } from 'sql/workbench/parts/notebook/models/notebookModel';
 import { ModelFactory } from 'sql/workbench/parts/notebook/models/modelFactory';
@@ -81,7 +81,8 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 	private _runAllCellsAction: RunAllCellsAction;
 	private _providerRelatedActions: IAction[] = [];
 	private _scrollTop: number;
-
+	private _navProvider: INavigationProvider;
+	private navigationResult: nb.NavigationResult;
 
 	constructor(
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
@@ -133,12 +134,9 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 		this._register(this.themeService.onDidColorThemeChange(this.updateTheme, this));
 		this.updateTheme(this.themeService.getColorTheme());
 		this.initActionBar();
-		if (this.contextKeyService.getContextKeyValue('isDevelopment') &&
-			this.contextKeyService.getContextKeyValue('bookOpened')) {
-			this.initNavSection();
-		}
 		this.setScrollPosition();
 		this.doLoad();
+		this.initNavSection();
 	}
 
 	ngOnDestroy() {
@@ -441,13 +439,32 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 	}
 
 	protected initNavSection(): void {
-		this.addButton(localize('previousButtonLabel', "Previous"),
-			() => this.previousPage());
-		this.addButton(localize('nextButtonLabel', "Next"),
-			() => this.nextPage());
+		this._navProvider = this.notebookService.getNavigationProvider(this._notebookParams.notebookUri);
+
+		if (this.contextKeyService.getContextKeyValue('isDevelopment') &&
+			this.contextKeyService.getContextKeyValue('bookOpened') &&
+			this._navProvider) {
+			this._navProvider.getNavigation(this._notebookParams.notebookUri).then(result => {
+				this.navigationResult = result;
+				this.addButton(localize('previousButtonLabel', "< Previous"),
+					() => this.previousPage(), this.navigationResult.previous ? true : false);
+				this.addButton(localize('nextButtonLabel', "Next >"),
+					() => this.nextPage(), this.navigationResult.next ? true : false);
+				this.detectChanges();
+			}, err => {
+				console.log(err);
+			});
+		}
 	}
 
-	private addButton(label: string, onDidClick?: () => void): void {
+	public get navigationVisibility(): 'hidden' | 'visible' {
+		if (this.navigationResult) {
+			return this.navigationResult.hasNavigation ? 'visible' : 'hidden';
+		}
+		return 'hidden';
+	}
+
+	private addButton(label: string, onDidClick?: () => void, enabled?: boolean): void {
 		const container = DOM.append(this.bookNav.nativeElement, DOM.$('.dialog-message-button'));
 		let button = new Button(container);
 		button.icon = '';
@@ -455,8 +472,9 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 		if (onDidClick) {
 			this._register(button.onDidClick(onDidClick));
 		}
-		this._register(attachButtonStyler(button, this.themeService));
-
+		if (!enabled) {
+			button.enabled = false;
+		}
 	}
 
 	private actionItemProvider(action: Action): IActionViewItem {
@@ -612,9 +630,8 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 
 	public async nextPage(): Promise<void> {
 		try {
-			let navProvider = this.notebookService.getNavigationProvider(this.model.notebookUri);
-			if (navProvider) {
-				navProvider.onNext(this.model.notebookUri);
+			if (this._navProvider) {
+				this._navProvider.onNext(this.model.notebookUri);
 			}
 		} catch (error) {
 			this.notificationService.error(notebookUtils.getErrorMessage(error));
@@ -623,9 +640,8 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 
 	public previousPage() {
 		try {
-			let navProvider = this.notebookService.getNavigationProvider(this.model.notebookUri);
-			if (navProvider) {
-				navProvider.onPrevious(this.model.notebookUri);
+			if (this._navProvider) {
+				this._navProvider.onPrevious(this.model.notebookUri);
 			}
 		} catch (error) {
 			this.notificationService.error(notebookUtils.getErrorMessage(error));
