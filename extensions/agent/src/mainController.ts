@@ -95,11 +95,7 @@ export class MainController {
 			this.proxyDialog.dialogName ? await this.proxyDialog.openDialog(this.proxyDialog.dialogName) : await this.proxyDialog.openDialog();
 		});
 		vscode.commands.registerCommand('agent.openNotebookEditorFromJsonString', async (filename: string, jsonNotebook: string) => {
-			let agentNotebookTempDir = path.join(os.tmpdir(), 'agent_notebooks');
-			const tempfilePath = path.join(agentNotebookTempDir, filename + '.ipynb');
-			if (!fs.existsSync(agentNotebookTempDir)) {
-				fs.mkdirSync(agentNotebookTempDir);
-			}
+			const tempfilePath = path.join(os.tmpdir(), filename + '.ipynb');
 			fs.writeFileSync(tempfilePath, jsonNotebook);
 			let uri = vscode.Uri.file(tempfilePath);
 			await azdata.nb.showNotebookDocument(uri);
