@@ -334,7 +334,7 @@
 				},
 				{
 					"name": "powershell",
-					"displayName": "Powershell",
+					"displayName": "PowerShell",
 					"connectionProviderIds": []
 				}
 			]
