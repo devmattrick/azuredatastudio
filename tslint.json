@@ -38,7 +38,9 @@
 		"layering": [
 			true,
 			{
-				"common": [],
+				"common": [
+					"browser" // at the moment we arent' too concerned about this, but in general this should be here
+				],
 				"node": [
 					"common"
 				],
