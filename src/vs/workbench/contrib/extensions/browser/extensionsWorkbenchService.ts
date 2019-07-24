@@ -64,8 +64,8 @@ class Extension implements IExtension {
 		@IProductService private readonly productService: IProductService
 	) { }
 
-	get type(): ExtensionType | undefined {
-		return this.local ? this.local.type : undefined;
+	get type(): ExtensionType {
+		return this.local ? this.local.type : ExtensionType.User;
 	}
 
 	get name(): string {
@@ -424,7 +424,9 @@ class Extensions extends Disposable {
 		const installingExtension = gallery ? this.installing.filter(e => areSameExtensions(e.identifier, gallery.identifier))[0] : null;
 		this.installing = installingExtension ? this.installing.filter(e => e !== installingExtension) : this.installing;
 
-		let extension: Extension | undefined = installingExtension ? installingExtension : zipPath ? this.instantiationService.createInstance(Extension, this.stateProvider, this.server, local, undefined) : undefined;
+		let extension: Extension | undefined = installingExtension ? installingExtension
+			: (zipPath || local) ? this.instantiationService.createInstance(Extension, this.stateProvider, this.server, local, undefined)
+				: undefined;
 		if (extension) {
 			if (local) {
 				const installed = this.installed.filter(e => areSameExtensions(e.identifier, extension!.identifier))[0];

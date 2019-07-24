@@ -76,19 +76,20 @@ export class RemoteExtensionHostClient extends Disposable implements IExtensionH
 			webSocketFactory: this._webSocketFactory,
 			addressProvider: {
 				getAddress: async () => {
-					const { host, port } = await this.remoteAuthorityResolverService.resolveAuthority(this._initDataProvider.remoteAuthority);
-					return { host, port };
+					const { authority } = await this.remoteAuthorityResolverService.resolveAuthority(this._initDataProvider.remoteAuthority);
+					return { host: authority.host, port: authority.port };
 				}
 			},
 			signService: this._signService
 		};
-		return this.remoteAuthorityResolverService.resolveAuthority(this._initDataProvider.remoteAuthority).then((resolvedAuthority) => {
+		return this.remoteAuthorityResolverService.resolveAuthority(this._initDataProvider.remoteAuthority).then((resolverResult) => {
 
 			const startParams: IRemoteExtensionHostStartParams = {
 				language: platform.language,
 				debugId: this._environmentService.debugExtensionHost.debugId,
 				break: this._environmentService.debugExtensionHost.break,
 				port: this._environmentService.debugExtensionHost.port,
+				env: resolverResult.options && resolverResult.options.extensionHostEnv
 			};
 
 			const extDevLocs = this._environmentService.extensionDevelopmentLocationURI;
@@ -161,6 +162,11 @@ export class RemoteExtensionHostClient extends Disposable implements IExtensionH
 	}
 
 	private _onExtHostConnectionLost(): void {
+
+		if (this._isExtensionDevHost && this._environmentService.debugExtensionHost.debugId) {
+			this._extensionHostDebugService.close(this._environmentService.debugExtensionHost.debugId);
+		}
+
 		if (this._terminating) {
 			// Expected termination path (we asked the process to terminate)
 			return;
