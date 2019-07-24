@@ -6,10 +6,12 @@
 import * as vscode from 'vscode';
 import { LiveShare, SharedService } from './liveshare';
 import { ConnectionProvider } from './providers/connectionProvider';
+import { QueryProvider } from './providers/queryProvider';
 import { StatusProvider } from './providers/statusProvider';
 import { LiveShareServiceName } from './constants';
 
 export class HostSessionManager {
+
 	constructor(
 		context: vscode.ExtensionContext,
 		vslsApi: LiveShare
@@ -22,9 +24,14 @@ export class HostSessionManager {
 				return;
 			}
 
-			new ConnectionProvider(true, sharedService);
+			const connectionProvider = new ConnectionProvider(true);
+			connectionProvider.initialize(true, sharedService);
 
-			new StatusProvider(true, sharedService);
+			const queryProvider = new QueryProvider(true);
+			queryProvider.initialize(true, sharedService);
+
+			let statusProvider = new StatusProvider(true);
+			statusProvider.initialize(true, sharedService);
 		});
 
 		// context.subscriptions.push(sharedService.onDidChangeIsServiceAvailable(available => {

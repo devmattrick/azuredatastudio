@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { SharedService, SharedServiceProxy }  from '../liveshare';
+import { SharedService, SharedServiceProxy } from '../liveshare';
 
 export class LiveShareDocumentState {
 	public isConnected: boolean;
@@ -16,10 +16,9 @@ export class StatusProvider {
 	private _sharedService: SharedService;
 	private _sharedServiceProxy: SharedServiceProxy;
 
-	public constructor(
-		private _isHost: boolean,
-		service: any) {
+	public constructor(private _isHost: boolean) { }
 
+	public initialize(isHost: boolean, service: any) {
 		if (this._isHost) {
 			this._sharedService = <SharedService>service;
 			this.registerStatusProvider();

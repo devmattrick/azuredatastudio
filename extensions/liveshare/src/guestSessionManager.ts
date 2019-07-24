@@ -1,13 +1,14 @@
-// /*---------------------------------------------------------------------------------------------
-//  *  Copyright (c) Microsoft Corporation. All rights reserved.
-//  *  Licensed under the Source EULA. See License.txt in the project root for license information.
-//  *--------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
 import { LiveShare, SharedServiceProxy } from './liveshare';
 import { ConnectionProvider } from './providers/connectionProvider';
 import { StatusProvider, LiveShareDocumentState } from './providers/statusProvider';
 import { LiveShareServiceName } from './constants';
+import { QueryProvider } from './providers/queryProvider';
 
 declare var require: any;
 let vsls = require('vsls');
@@ -35,9 +36,13 @@ export class GuestSessionManager {
 				return;
 			}
 
-			new ConnectionProvider(false, sharedServiceProxy);
+			const connectionProvider = new ConnectionProvider(false);
+			connectionProvider.initialize(false, sharedServiceProxy);
 
-			this._statusProvider = new StatusProvider(true, sharedServiceProxy);
+			const queryProvider = new QueryProvider(false);
+			queryProvider.initialize(false, sharedServiceProxy);
+			this._statusProvider = new StatusProvider(true);
+			this._statusProvider.initialize(true, sharedServiceProxy);
 		});
 	}
 
@@ -50,7 +55,7 @@ export class GuestSessionManager {
 			/* tslint:disable:no-unused-variable */
 			let documentState: LiveShareDocumentState = await this._statusProvider.getDocumentState(doc);
 			let outlog: string = `Document state: isConnected=${documentState.isConnected}, serverName=${documentState.serverName}, databaseName=${documentState.databaseName}`;
-			console.log(outlog)
+			console.log(outlog);
 		}
 	}
 }
