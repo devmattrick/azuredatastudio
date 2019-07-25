@@ -68,6 +68,37 @@ export class MainThreadQueryEditor implements MainThreadQueryEditorShape {
 		});
 	}
 
+	private static connectionProfileToIConnectionProfile(connection: azdata.connection.ConnectionProfile): IConnectionProfile {
+		// let getOptionsKey = (): string => {
+		// 	return undefined;
+		// };
+
+		// let matches = (profile: azdata.IConnectionProfile): boolean => {
+		// 	return true;
+		// }
+
+		// //let profile: IConnectionProfile = <IConnectionProfile><any>connection;
+		// let profile: IConnectionProfile = {
+		// 	connectionName: connection.connectionName,
+		// 	serverName: connection.connectionName,
+		// 	databaseName: connection.connectionName,
+		// 	userName: connection.connectionName,
+		// 	password: connection.connectionName,
+		// 	authenticationType: connection.connectionName,
+		// 	savePassword: connection.connectionName,
+		// 	groupFullName: connection.connectionName,
+		// 	groupId: connection.connectionName,
+		// 	providerName: connection.connectionName,
+		// 	saveProfile: connection.connectionName,
+		// 	id: connection.connectionName,
+		// 	azureTenantId: connection.connectionName,
+		// 	getOptionsKey: getOptionsKey,
+		// 	matches: matches
+		// };
+		let profile: IConnectionProfile = <IConnectionProfile><any>connection;
+		return profile;
+	}
+
 	public $connectWithProfile(fileUri: string, connection: azdata.connection.ConnectionProfile): Thenable<void> {
 		return new Promise<void>(async (resolve, reject) => {
 			let editors = this._editorService.visibleControls.filter(resource => {
@@ -83,7 +114,7 @@ export class MainThreadQueryEditor implements MainThreadQueryEditorShape {
 				showFirewallRuleOnError: false,
 			};
 
-			let profile: IConnectionProfile = <IConnectionProfile><any>connection;
+			let profile: IConnectionProfile = MainThreadQueryEditor.connectionProfileToIConnectionProfile(connection);
 			let connectionResult = await this._connectionManagementService.connect(profile, fileUri, options);
 			if (connectionResult && connectionResult.connected) {
 				console.log(`editor ${fileUri} connected`);

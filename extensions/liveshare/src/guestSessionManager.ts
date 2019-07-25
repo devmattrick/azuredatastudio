@@ -6,9 +6,9 @@
 import * as vscode from 'vscode';
 import * as azdata from 'azdata';
 import { LiveShare, SharedServiceProxy } from './liveshare';
+import { LiveShareProviderId, LiveShareServiceName, VslsSchema } from './constants';
 import { ConnectionProvider } from './providers/connectionProvider';
 import { StatusProvider, LiveShareDocumentState } from './providers/statusProvider';
-import { LiveShareServiceName, VslsSchema } from './constants';
 import { QueryProvider } from './providers/queryProvider';
 
 declare var require: any;
@@ -55,9 +55,15 @@ export class GuestSessionManager {
 			if (documentState) {
 				let queryDocument = await azdata.queryeditor.getQueryDocument(doc.uri.toString());
 				if (queryDocument) {
-					let connectionOptions: any[] = [];
+					let connectionOptions: Map<string, any> = new Map<string, any>();
+					connectionOptions['providerName'] = LiveShareProviderId;
 					connectionOptions['serverName'] = documentState.serverName;
 					connectionOptions['databaseName'] = documentState.databaseName;
+					connectionOptions['userName'] = 'liveshare';
+					connectionOptions['password'] = 'liveshare';
+					connectionOptions['authenticationType'] = 'liveshare';
+					connectionOptions['savePassword'] = false;
+					connectionOptions['saveProfile'] = false;
 					let profile = azdata.connection.ConnectionProfile.createFrom(connectionOptions);
 					queryDocument.connect(profile);
 				}

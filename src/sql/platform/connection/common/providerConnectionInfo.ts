@@ -181,6 +181,11 @@ export class ProviderConnectionInfo extends Disposable implements azdata.Connect
 	}
 
 	public isPasswordRequired(): boolean {
+		// if there is no provider capabilities metadata assume a password is not required
+		if (!this._serverCapabilities) {
+			return false;
+		}
+
 		let optionMetadata = this._serverCapabilities.connectionOptions.find(
 			option => option.specialValueType === ConnectionOptionSpecialType.password);
 		let isPasswordRequired: boolean = optionMetadata.isRequired;
